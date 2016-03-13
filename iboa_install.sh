@@ -48,6 +48,10 @@ else
    echo \#alias aa=aag                                                          >> $IBOA_FILE
    echo alias aa=aau                                                            >> $IBOA_FILE
 
+   # create the 'goto taga dir' ('g') and 'trace alias' ('ta') aliases
+   echo "alias g='TAGA_DIR=~/scripts/taga; cd \$TAGA_DIR'"                      >> $IBOA_FILE
+   echo "alias ta='g; ./aliasTrace.sh'"                                         >> $IBOA_FILE
+
    # create the insertAliasUser function for the 'install alias user' (iau) alias
    echo "function __insertAliasUser() {"                                         >> $IBOA_FILE
    echo "  if [ \$# -ge 1 ]; then"                                               >> $IBOA_FILE
@@ -103,11 +107,45 @@ else
    # create the insertAliasPrevious function for the 'install alias previous' (previous command) (iap) alias
    echo "function __insertAliasPrevious() {"                                     >> $IBOA_FILE
    echo "  if [ \$# -eq 1 ]; then"                                               >> $IBOA_FILE
-   echo "    CMD=\`history | tail -n 2 | head -n 1 | cut -c8-\`"                 >> $IBOA_FILE
-   echo "    echo alias \$1=\'\$CMD\' >> $IBOA_USER_FILE"                        >> $IBOA_FILE
+   echo "    which \$1 "                                                         >> $IBOA_FILE
    echo "    if [ \$? -eq 0 ]; then"                                             >> $IBOA_FILE
-   echo "      source $IBOA_USER_FILE"                                           >> $IBOA_FILE
-   echo "      echo alias\(es\) successfully installed into $IBOA_USER_FILE"     >> $IBOA_FILE
+   echo "      echo the \$1 command exists - no action taken!"                   >> $IBOA_FILE
+   echo "    else"                                                               >> $IBOA_FILE
+   echo "      alias \$1  >/dev/null "                                           >> $IBOA_FILE
+   echo "      if [ \$? -eq 0 ]; then"                                           >> $IBOA_FILE
+   echo "        echo the \$1 alias exists - no action taken!"                   >> $IBOA_FILE
+   echo "      else"                                                             >> $IBOA_FILE
+   echo "        CMD=\`history | tail -n 2 | head -n 1 | cut -c8-\`"             >> $IBOA_FILE
+   echo "        echo alias \$1=\'\$CMD\' >> $IBOA_USER_FILE"                    >> $IBOA_FILE
+   echo "        if [ \$? -eq 0 ]; then"                                         >> $IBOA_FILE
+   echo "          source $IBOA_USER_FILE"                                       >> $IBOA_FILE
+   echo "          echo alias\(es\) successfully installed into $IBOA_USER_FILE" >> $IBOA_FILE
+   echo "        fi"                                                             >> $IBOA_FILE
+   echo "      fi"                                                               >> $IBOA_FILE
+   echo "    fi"                                                                 >> $IBOA_FILE
+   echo "  else"                                                                 >> $IBOA_FILE
+   echo "    echo this alias requires a single parameter - no action taken!"     >> $IBOA_FILE
+   echo "  fi"                                                                   >> $IBOA_FILE
+   echo "}"                                                                      >> $IBOA_FILE
+
+   # create the wrapAliasPrevious function for the 'wrap alias previous' (previous command) (wap) alias
+   echo "function __wrapAliasPrevious() {"                                     >> $IBOA_FILE
+   echo "  if [ \$# -eq 1 ]; then"                                               >> $IBOA_FILE
+   echo "    which \$1 "                                                         >> $IBOA_FILE
+   echo "    if [ \$? -eq 0 ]; then"                                             >> $IBOA_FILE
+   echo "      echo the \$1 command exists - no action taken!"                   >> $IBOA_FILE
+   echo "    else"                                                               >> $IBOA_FILE
+   echo "      alias \$1  >/dev/null "                                           >> $IBOA_FILE
+   echo "      if [ \$? -eq 0 ]; then"                                           >> $IBOA_FILE
+   echo "        echo the \$1 alias exists - no action taken!"                   >> $IBOA_FILE
+   echo "      else"                                                             >> $IBOA_FILE
+   echo "        CMD=\`history | tail -n 2 | head -n 1 | cut -c8-\`"             >> $IBOA_FILE
+   echo "        echo \"alias \$1='while true; do echo; date; \$CMD ; sleep 1; done'\" >> $IBOA_USER_FILE" >> $IBOA_FILE
+   echo "        if [ \$? -eq 0 ]; then"                                         >> $IBOA_FILE
+   echo "          source $IBOA_USER_FILE"                                       >> $IBOA_FILE
+   echo "          echo alias\(es\) successfully installed into $IBOA_USER_FILE" >> $IBOA_FILE
+   echo "        fi"                                                             >> $IBOA_FILE
+   echo "      fi"                                                               >> $IBOA_FILE
    echo "    fi"                                                                 >> $IBOA_FILE
    echo "  else"                                                                 >> $IBOA_FILE
    echo "    echo this alias requires a single parameter - no action taken!"     >> $IBOA_FILE
@@ -120,6 +158,7 @@ else
    echo "alias ias='__insertAliasSystem'"                                        >> $IBOA_FILE
    echo "alias iai='__insertAliasIboa'"                                          >> $IBOA_FILE
    echo "alias iap='__insertAliasPrevious'"                                      >> $IBOA_FILE
+   echo "alias wap='__wrapAliasPrevious'"                                        >> $IBOA_FILE
    echo \#alias ia=iai                                                           >> $IBOA_FILE
    echo \#alias ia=ias                                                           >> $IBOA_FILE
    echo \#alias ia=iag                                                           >> $IBOA_FILE
@@ -145,9 +184,16 @@ else
    echo "################################################################" >> $IBOA_USER_FILE
    echo "alias testiboa='echo This is a Test'"                             >> $IBOA_USER_FILE
    echo "################################################################" >> $IBOA_USER_FILE
-   echo "# BEGIN TAGA Exensions are included here                              " >> $IBOA_USER_FILE
+   echo "# BEGIN TAGA Exensions are included here                        " >> $IBOA_USER_FILE
    echo "################################################################" >> $IBOA_USER_FILE
    echo "alias run='echo This is a Test'"                                  >> $IBOA_USER_FILE
+   echo "alias x='exit'"                                                   >> $IBOA_USER_FILE
+   echo "alias g='TAGA_DIR=~/scripts/taga; cd \$TAGA_DIR'"                 >> $IBOA_USER_FILE
+   echo "alias trace='g; ./aliasTrace.sh'"                                 >> $IBOA_USER_FILE
+   echo "alias trac='trace'"                                               >> $IBOA_USER_FILE
+   echo "alias tra='trac'"                                                 >> $IBOA_USER_FILE
+   echo "alias tr='tra'"                                                   >> $IBOA_USER_FILE
+   echo "alias t='tr'"                                                     >> $IBOA_USER_FILE
    echo "alias run='TAGA_DIR=~/scripts/taga; \$TAGA_DIR/runLoopWrapper.sh'" >> $IBOA_USER_FILE
    echo "alias mon='TAGA_DIR=~/scripts/taga; touch \$TAGA_DIR/counts.txt; tail -f \$TAGA_DIR/counts.txt'" >> $IBOA_USER_FILE
    echo "alias grem='TAGA_DIR=~/scripts/taga; \$TAGA_DIR/remoteLoginAll.sh'" >> $IBOA_USER_FILE
@@ -155,7 +201,7 @@ else
    echo "alias vt='TAGA_DIR=~/scripts/taga; vi \$TAGA_DIR/targetList.sh'"  >> $IBOA_USER_FILE
    echo "alias ta='TAGA_DIR=~/scripts/taga; cd $TAGA_DIR; ./traceAlias.sh'" >> $IBOA_USER_FILE
    echo "################################################################" >> $IBOA_USER_FILE
-   echo "# END TAGA Exensions are included here                              " >> $IBOA_USER_FILE
+   echo "# END TAGA Exensions are included here                          " >> $IBOA_USER_FILE
    echo "################################################################" >> $IBOA_USER_FILE
    echo "################################################################" >> $IBOA_USER_FILE
    echo "# Place your aliases below; See the 'testiboa' alias for example" >> $IBOA_USER_FILE
